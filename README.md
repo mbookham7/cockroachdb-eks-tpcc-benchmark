@@ -8,7 +8,7 @@ export clus2="mb-tpcc-cluster-1"
 export kubernetes_version=1.21
 ```
 
-1. Create you eks cluster of the desired size here I am using three instances of type c5d.4xlarge
+2. Create you eks cluster of the desired size here I am using three instances of type c5d.4xlarge
 ```
 eksctl create cluster \
 --name $clus2 \
@@ -21,22 +21,22 @@ eksctl create cluster \
 ```
 
 
-1. Download the stateful set configuration and edit to meet your requirements
+3. Download the stateful set configuration and edit to meet your requirements
 ```
 curl -O https://raw.githubusercontent.com/cockroachdb/cockroach/master/cloud/kubernetes/bring-your-own-certs/cockroachdb-statefulset.yaml
 ```
 
-1. Make this directories for our certificates.
+4. Make this directories for our certificates.
 ```
 mkdir certs my-safe-directory
 ```
 
-1. Use the cockroach CLI to create the ca.
+5. Use the cockroach CLI to create the ca.
 ```
 cockroach cert create-ca --certs-dir=certs --ca-key=my-safe-directory/ca.key
 ```
 
-1. Create a client certificate and key pair for the root user:
+6. Create a client certificate and key pair for the root user:
 ```
 cockroach cert create-client \
 root \
@@ -44,14 +44,14 @@ root \
 --ca-key=my-safe-directory/ca.key
 ```
 
-1. Upload the client certificate and key to the Kubernetes cluster as a secret:
+7. Upload the client certificate and key to the Kubernetes cluster as a secret:
 ```
 kubectl create secret \
 generic cockroachdb.client.root \
 --from-file=certs
 ```
 
-1. Create the certificate and key pair for your CockroachDB nodes:
+8. Create the certificate and key pair for your CockroachDB nodes:
 ```
 cockroach cert create-node \
 localhost 127.0.0.1 \
@@ -65,27 +65,27 @@ cockroachdb-public.default.svc.cluster.local \
 --ca-key=my-safe-directory/ca.key
 ```
 
-1. Upload the node certificate and key to the Kubernetes cluster as a secret:
+9. Upload the node certificate and key to the Kubernetes cluster as a secret:
 ```
 kubectl create secret \
 generic cockroachdb.node \
 --from-file=certs
 ```
 
-1. Create the kubernetes resources
+10. Create the kubernetes resources
 ```
 kubectl create -f cockroachdb-statefulset.yaml
 kubectl create -f aws-svc-admin-ui.yaml
 ```
 
-1. Run cockroach init on one of the pods to complete the node startup process and have them join together as a cluster:
+11. Run cockroach init on one of the pods to complete the node startup process and have them join together as a cluster:
 ```
 kubectl exec -it cockroachdb-0 \
 -- /cockroach/cockroach init \
 --certs-dir=/cockroach/cockroach-certs
 ```
 
-1. To use the CockroachDB SQL client, first launch a secure pod running the cockroach binary.
+12. To use the CockroachDB SQL client, first launch a secure pod running the cockroach binary.
 ```
 kubectl create -f https://raw.githubusercontent.com/cockroachdb/cockroach/master/cloud/kubernetes/bring-your-own-certs/client.yaml
 ```
@@ -97,14 +97,14 @@ kubectl exec -it cockroachdb-client-secure \
 --host=cockroachdb-public
 ```
 
-1. Create a user to log in to the UI with.
+13. Create a user to log in to the UI with.
 ```
 CREATE USER craig WITH PASSWORD 'cockroach';
 
 GRANT admin TO craig;
 \q
 ```
-1. Now shell into the secure client again but this time just with `sh` as we need to pull down our dataset form the internet.
+14. Now shell into the secure client again but this time just with `sh` as we need to pull down our dataset form the internet.
 
 ```
 kubectl exec -it cockroachdb-client-secure \
@@ -112,7 +112,7 @@ kubectl exec -it cockroachdb-client-secure \
 ```
 
 
-1. Download the CockroachDB archive for Linux, extract the binary, and copy it into the PATH:
+15. Download the CockroachDB archive for Linux, extract the binary, and copy it into the PATH:
 ```
 curl https://binaries.cockroachdb.com/cockroach-v22.1.1.linux-amd64.tgz | tar -xz
 ```
@@ -121,7 +121,7 @@ cp -i cockroach-v22.1.1.linux-amd64/cockroach /usr/local/bin/
 ```
 If you get a permissions error, prefix the command with sudo.
 
-1. Import the TPC-C dataset:
+16. Import the TPC-C dataset:
 ```
 cockroach workload fixtures import tpcc --warehouses=2500 'postgresql://root@cockroachdb-0.cockroachdb:26257?sslmode=verify-full&sslrootcert=/cockroach-certs/ca.crt&sslcert=/cockroach-certs/client.root.crt&sslkey=/cockroach-certs/client.root.key'
 ```
@@ -150,14 +150,14 @@ I220616 10:11:11.850450 1 workload/tpcc/tpcc.go:517  [-] 19  check 3.3.2.8 took 
 I220616 10:11:42.313118 1 workload/tpcc/tpcc.go:517  [-] 20  check 3.3.2.9 took 30.46262877s
 ```
 
-1. Create the a file called `addrs` on the file system with the command below.
+17. Create the a file called `addrs` on the file system with the command below.
 ```
 cat > addrs<<EOF
 postgresql://root@cockroachdb-0.cockroachdb:26257?sslmode=verify-full&sslrootcert=/cockroach-certs/ca.crt&sslcert=/cockroach-certs/client.root.crt&sslkey=/cockroach-certs/client.root.key postgresql://root@cockroachdb-1.cockroachdb:26257?sslmode=verify-full&sslrootcert=/cockroach-certs/ca.crt&sslcert=/cockroach-certs/client.root.crt&sslkey=/cockroach-certs/client.root.key postgresql://root@cockroachdb-2.cockroachdb:26257?sslmode=verify-full&sslrootcert=/cockroach-certs/ca.crt&sslcert=/cockroach-certs/client.root.crt&sslkey=/cockroach-certs/client.root.key
 EOF
 ```
 
-1. Run TPC-C for 30 minutes:
+18. Run TPC-C for 30 minutes:
 ```
 cockroach workload run tpcc \
 --warehouses=2500 \
@@ -166,7 +166,7 @@ cockroach workload run tpcc \
 $(cat addrs)
 ```
 
-Eample Output
+Example Output
 ```
 _elapsed_______tpmC____efc__avg(ms)__p50(ms)__p90(ms)__p95(ms)__p99(ms)_pMax(ms)
  1800.0s    28185.8  87.7%   2407.9    570.4   7247.8  15032.4  28991.0 103079.2
