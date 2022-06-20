@@ -1,4 +1,4 @@
-# Blog Run a TPCC Benchmark in eks
+# CockroachDB TPCC Benchmark on EKS
 
 1. First set some variables.
 ```
@@ -8,7 +8,7 @@ export clus2="mb-tpcc-cluster-1"
 export kubernetes_version=1.21
 ```
 
-2. Create you eks cluster of the desired size here I am using three instances of type c5d.4xlarge
+2. Create you eks cluster of the desired size here I am using three instances of type `c5d.4xlarge`.
 ```
 eksctl create cluster \
 --name $clus2 \
@@ -21,7 +21,7 @@ eksctl create cluster \
 ```
 
 
-3. Download the stateful set configuration and edit to meet your requirements
+3. Download the stateful set configuration and edit to meet your requirements.
 ```
 curl -O https://raw.githubusercontent.com/cockroachdb/cockroach/master/cloud/kubernetes/bring-your-own-certs/cockroachdb-statefulset.yaml
 ```
@@ -36,7 +36,7 @@ mkdir certs my-safe-directory
 cockroach cert create-ca --certs-dir=certs --ca-key=my-safe-directory/ca.key
 ```
 
-6. Create a client certificate and key pair for the root user:
+6. Create a client certificate and key pair for the root user.
 ```
 cockroach cert create-client \
 root \
@@ -44,14 +44,14 @@ root \
 --ca-key=my-safe-directory/ca.key
 ```
 
-7. Upload the client certificate and key to the Kubernetes cluster as a secret:
+7. Upload the client certificate and key to the Kubernetes cluster as a secret.
 ```
 kubectl create secret \
 generic cockroachdb.client.root \
 --from-file=certs
 ```
 
-8. Create the certificate and key pair for your CockroachDB nodes:
+8. Create the certificate and key pair for your CockroachDB nodes.
 ```
 cockroach cert create-node \
 localhost 127.0.0.1 \
@@ -65,20 +65,20 @@ cockroachdb-public.default.svc.cluster.local \
 --ca-key=my-safe-directory/ca.key
 ```
 
-9. Upload the node certificate and key to the Kubernetes cluster as a secret:
+9. Upload the node certificate and key to the Kubernetes cluster as a secret.
 ```
 kubectl create secret \
 generic cockroachdb.node \
 --from-file=certs
 ```
 
-10. Create the kubernetes resources
+10. Create the kubernetes resources.
 ```
 kubectl create -f cockroachdb-statefulset.yaml
 kubectl create -f aws-svc-admin-ui.yaml
 ```
 
-11. Run cockroach init on one of the pods to complete the node startup process and have them join together as a cluster:
+11. Run cockroach init on one of the pods to complete the node startup process and have them join together as a cluster.
 ```
 kubectl exec -it cockroachdb-0 \
 -- /cockroach/cockroach init \
@@ -107,12 +107,11 @@ GRANT admin TO craig;
 14. Now shell into the secure client again but this time just with `sh` as we need to pull down our dataset form the internet.
 
 ```
-kubectl exec -it cockroachdb-client-secure \
--- sh
+kubectl exec -it cockroachdb-client-secure -- sh
 ```
 
 
-15. Download the CockroachDB archive for Linux, extract the binary, and copy it into the PATH:
+15. Download the CockroachDB archive for Linux, extract the binary, and copy it into the PATH.
 ```
 curl https://binaries.cockroachdb.com/cockroach-v22.1.1.linux-amd64.tgz | tar -xz
 ```
@@ -121,7 +120,7 @@ cp -i cockroach-v22.1.1.linux-amd64/cockroach /usr/local/bin/
 ```
 If you get a permissions error, prefix the command with sudo.
 
-16. Import the TPC-C dataset:
+16. Import the TPC-C dataset.
 ```
 cockroach workload fixtures import tpcc --warehouses=2500 'postgresql://root@cockroachdb-0.cockroachdb:26257?sslmode=verify-full&sslrootcert=/cockroach-certs/ca.crt&sslcert=/cockroach-certs/client.root.crt&sslkey=/cockroach-certs/client.root.key'
 ```
@@ -157,7 +156,7 @@ postgresql://root@cockroachdb-0.cockroachdb:26257?sslmode=verify-full&sslrootcer
 EOF
 ```
 
-18. Run TPC-C for 30 minutes:
+18. Run TPC-C for 30 minutes.
 ```
 cockroach workload run tpcc \
 --warehouses=2500 \
