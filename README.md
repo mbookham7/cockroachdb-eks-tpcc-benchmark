@@ -26,7 +26,20 @@ eksctl create cluster \
 curl -O https://raw.githubusercontent.com/cockroachdb/cockroach/master/cloud/kubernetes/bring-your-own-certs/cockroachdb-statefulset.yaml
 ```
 
-4. Make this directories for our certificates.
+The key element to update in the config file is the resources section. You will want to edit these to make the most of the instances in your worker pool. In my example, my instances have 16 vCPUs and 32GiB RAM. You need to allow some resources for your OS and Kubernetes components.
+
+Example Output:
+```
+        resources:
+          requests:
+            cpu: "12"
+            memory: "24Gi"
+          limits:
+            cpu: "12"
+            memory: "24Gi" 
+```
+
+4. Make these directories for our certificates.
 ```
 mkdir certs my-safe-directory
 ```
