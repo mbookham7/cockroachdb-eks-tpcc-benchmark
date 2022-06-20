@@ -178,7 +178,7 @@ cockroach workload run tpcc \
 $(cat addrs)
 ```
 
-Example Output
+Example Output:
 ```
 _elapsed_______tpmC____efc__avg(ms)__p50(ms)__p90(ms)__p95(ms)__p99(ms)_pMax(ms)
  1800.0s    28185.8  87.7%   2407.9    570.4   7247.8  15032.4  28991.0 103079.2
